@@ -1,0 +1,7 @@
+[basic]
+
+[rabbitmq]
+host=xxx
+port=5672
+username=xxx
+password=xxx
