@@ -9,6 +9,8 @@
 - rabbitmq
 - [资产管理子系统部署](https://github.com/smilexxfire/assertManager)
 
+平台支持
+- Linux
 ## 使用
 1. `pip install -r requirements.txt`
 2. 修改配置文件default.ini.sample，并重命名为default.ini
