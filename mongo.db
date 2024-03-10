@@ -1,0 +1,2 @@
+use src
+db.subdomain.createIndex( { "subdomain": 1 }, { unique: true } )
