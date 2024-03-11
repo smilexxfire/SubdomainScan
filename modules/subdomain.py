@@ -27,11 +27,11 @@ class Subdomain(object):
         :param input: 任务接收的输入
         :return:
         """
-
         db = conn_db(cls.DB_COLLECTION)
         logger.info(f"{cls.PREFIX}数据入库中....")
         if not os.path.isfile(filename):  # 扫描结果为空的情况
             return
+        insert_data_list = list()
         # 打开文件并读取内容
         with open(filename, 'r', encoding="utf8") as f:
             if source == "xray":
@@ -54,8 +54,8 @@ class Subdomain(object):
                         del data["verbose_name"]
                         rename_dict_key(data, "domain", "subdomain")
                         rename_dict_key(data, "parent", "domain")
-                        # 记录存在则不插入
-                        db.insert_one(data)
+                        # 添加到插入记录列表
+                        insert_data_list.append(data)
                     except:
                         pass
             elif source == "subfinder":
@@ -74,28 +74,18 @@ class Subdomain(object):
                     rename_dict_key(data, "host", "subdomain")
                     rename_dict_key(data, "input", "domain")
                     # 插入记录，已有记录则忽略
-                    try:
-                        db.insert_one(data)
-                    except pymongo.errors.DuplicateKeyError:
-                        pass
-            elif source == "chaos":
-                json_data = json.loads(f.read())
-                for subdomain in json_data["subdomains"]:
-                    if "*" in subdomain:
-                        continue
-                    data = {
-                        "domain": json_data["domain"],
-                        "subdomain": subdomain + "." + json_data["domain"],
-                        "insert_time": datetime.datetime.now(),
-                        "scan_from": "chaos",
-                        "assert_name": input["assert_name"]
-                    }
-                    # 插入记录，已有记录则忽略
-                    try:
-                        db.insert_one(data)
-                    except pymongo.errors.DuplicateKeyError:
-                        pass
-
+                    insert_data_list.append(data)
+        # 插入记录
+        try:
+            db = conn_db("asserts")
+            db.insert_many(insert_data_list, ordered=False)
+        except pymongo.errors.BulkWriteError as e:
+            for error in e.details['writeErrors']:
+                if error['code'] == 11000:  # E11000 duplicate key error collection，忽略重复主键错误
+                    pass
+                    # print(f"Ignoring duplicate key error for document with _id {error['op']['_id']}")
+                else:
+                    raise  # 如果不是重复主键错误，重新抛出异常
         # 删除文件
         delete_file_if_exists(filename)
 
