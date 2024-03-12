@@ -76,6 +76,8 @@ class Subdomain(object):
                     # 插入记录，已有记录则忽略
                     insert_data_list.append(data)
         # 插入记录
+        if not insert_data_list:
+            return
         try:
             db = conn_db("asserts")
             db.insert_many(insert_data_list, ordered=False)
