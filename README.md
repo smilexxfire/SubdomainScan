@@ -4,10 +4,13 @@
 定时对指定域名进行子域名扫描，并将结果存入数据库，同时对变化内容进行消息推送，支持多种子域名扫描工具。
 
 
-项目依赖
+## 项目依赖
 - mongo
 - rabbitmq
 - [资产管理子系统部署](https://github.com/smilexxfire/assertManager)
+- subdomain扫描工具
+  - subfinder：环境变量中配置好即可
+  - xray：需在modules/subdomain.py中修改xray_scan方法的bin_directory变量为xray所在目录（仅xray高级版支持子域名扫描
 
 平台支持
 - Linux
