@@ -23,7 +23,6 @@ class RabbitMQConsumer:
         # 任务处理
         Subdomain.start(data)
 
-
     def start_consuming(self):
         try:
             connection = RabbitMQConnection.get_connection()

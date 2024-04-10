@@ -1,5 +1,3 @@
-import time
-
 import pika
 from utils.tools import *
 from pymongo import MongoClient
@@ -51,11 +49,3 @@ def conn_db(collection):
     conn = ConnMongo().conn
     if db_name:
         return conn[db_name][collection]
-
-# db = conn_db("asserts")
-# results = db.find()
-# rs = list(results)
-# for _ in rs:
-#     print(_)
-# print(len(rs))
-# print(type(rs[0]))

@@ -79,7 +79,7 @@ class Subdomain(object):
         if not insert_data_list:
             return
         try:
-            db = conn_db("asserts")
+            db = conn_db("subdomain")
             db.insert_many(insert_data_list, ordered=False)
         except pymongo.errors.BulkWriteError as e:
             for error in e.details['writeErrors']:
@@ -135,6 +135,8 @@ class Subdomain(object):
     def start(cls, data: dict):
         """子域名扫描入口函数
 
+        :param data: 待扫描任务字典，assert_name、domain
+        :return:
         """
         logger.info(f"{cls.PREFIX}子域名模块启动.......")
         try:
