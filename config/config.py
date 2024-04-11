@@ -16,5 +16,8 @@ NOTICE_TIME = read_ini_config("notifier", "scan_and_notice_time")
 PROJECT_DIRECTORY = os.path.dirname(os.path.abspath(__file__)) + "/../"
 # Windows/Linux
 PLATFORM = platform.system()
+# 子域名模块相关记录
+SUBDOMAIN_MODULE = read_ini_config("subdomain", "module")
+SUBDOMAIN_ASSERT_NAME = read_ini_config("subdomain", "assert_name")
 # 全局的日志
 logger = Logger()

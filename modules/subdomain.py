@@ -135,21 +135,16 @@ class Subdomain(object):
     def start(cls, data: dict):
         """子域名扫描入口函数
 
-        :param data: 待扫描任务字典，assert_name、domain
+        :param data: 待扫描任务字典，assert_name、domain、module_name
         :return:
         """
         logger.info(f"{cls.PREFIX}子域名模块启动.......")
         try:
-            # 获取启用的模块
-            module_list = read_ini_config("subdomain", "module").split(",")
-            module_list = list(map(str.strip, module_list))  # 消除无效字符
-
-            for module_name in module_list:
-                method = getattr(cls, module_name + "_scan")
-                logger.info(f"{cls.PREFIX}启用{module_name}扫描...")
-                print(data)
-                method(data)
-                logger.info(f"{cls.PREFIX}{module_name}扫描结束...")
+            method = getattr(cls, data['module_name'] + "_scan")
+            logger.info(f"{cls.PREFIX}启用{data['module_name']}扫描...")
+            print(data)
+            method(data)
+            logger.info(f"{cls.PREFIX}{data['module_name']}扫描结束...")
         except Exception as e:
             logger.error(f"{cls.PREFIX}扫描出错...")
             raise e

@@ -1,6 +1,8 @@
 import json
 
 import pika
+
+from config.config import SUBDOMAIN_MODULE, SUBDOMAIN_ASSERT_NAME
 from modules.database import RabbitMQConnection
 from utils.tools import read_ini_config
 
@@ -26,29 +28,30 @@ class RabbitMQProducer:
         print(f"Queue '{self.queue_name}' purged")
 
     def publish_subdomain_task(self):
-        db = conn_db("asserts")
-        # 查询所有资产的情况
-        if read_ini_config("subdomain", "assert_name") == "all":
-            results = db.find()
-            for result in results:
-                data = {
-                    "assert_name": result["assert_name"],
-                    "domain": result["domain"]
+        # 获取启用的扫描模块
+        scan_modules = SUBDOMAIN_MODULE.split(",")
+        scan_modules = list(map(str.strip, scan_modules))  # 消除无效字符
+
+        # 获取需要扫描的资产名称
+        query = {}
+        if SUBDOMAIN_ASSERT_NAME != "all":
+            assert_names = SUBDOMAIN_ASSERT_NAME.split(",")
+            query = {"assert_name": {"$in": assert_names}}
+        collection = conn_db("asserts")
+        records = collection.find(query)
+        datas = list()
+        for record in records:
+            datas.append(record)
+
+        # 发布扫描任务
+        for data in datas:
+            for module_name in scan_modules:
+                task = {
+                    "assert_name": data["assert_name"],
+                    "domain": data["domain"],
+                    "module_name": module_name
                 }
-                self.publish_message(json.dumps(data))
-            return
-        # 查询部分资产的情况
-        assert_name_list = read_ini_config("subdomain", "assert_name").split(",")
-        for assert_name in assert_name_list:
-            assert_name = assert_name.strip()
-            results = db.find({"assert_name": assert_name})
-            for result in results:
-                data = {
-                    "assert_name": assert_name,
-                    "domain": result["domain"]
-                }
-                print(data)
-                self.publish_message(json.dumps(data))
+                self.publish_message(json.dumps(task))
 
 
 
