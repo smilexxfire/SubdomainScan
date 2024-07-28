@@ -8,9 +8,6 @@ class Notifier(ABC):
     def send_message(self, message):
         pass
 
-
-
-
 class DingTalkNotifier(Notifier):
     __instance = None
 
@@ -38,7 +35,6 @@ class DingTalkNotifier(Notifier):
         response = requests.post(self.url, headers=self.headers, data=json.dumps(data))
         return response.status_code
 
-
 class NotifierFactory:
     @staticmethod
     def get_notifier():
@@ -49,7 +45,7 @@ class NotifierFactory:
         else:
             raise ValueError("Invalid notifier name.")
 
-
-# 示例用法
-# notifier = NotifierFactory.get_notifier()
-# response = notifier.send_message("[小小火牛逼]\n测试消息")
+if __name__ == '__main__':
+    # 示例用法
+    notifier = NotifierFactory.get_notifier()
+    response = notifier.send_message("[小小火测试]\n测试消息")

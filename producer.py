@@ -1,6 +1,4 @@
-import json
-
-from core.producer import RabbitMQProducer
+from modules.database.producer import RabbitMQProducer
 
 producer = RabbitMQProducer()
 producer.purge_queue()
