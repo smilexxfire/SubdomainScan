@@ -2,7 +2,8 @@
 # Stacks detected: deps:python:.
 version: 2.1
 jobs:
-  build:
+  deploy:
+    # This is an example deploy job, not actually used by the workflow
     filters:
       branches:
         ignore:
@@ -10,8 +11,6 @@ jobs:
       files:
         ignore:
           - README.md
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
     docker:
       - image: cimg/base:stable
     steps:
