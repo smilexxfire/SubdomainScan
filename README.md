@@ -62,4 +62,4 @@ pip install -r requirements.txt
 ```
 修改`producer.py`文件
 
-接着运行`python producer.py`即可发布扫描任务
+接着运行`python producer.py`即可发布扫描任务，若需要通过资产名称一键发送多个任务，需部署[资产管理子系统](https://github.com/smilexxfire/AssertManager)

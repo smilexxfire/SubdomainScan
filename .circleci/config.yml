@@ -4,13 +4,6 @@ version: 2.1
 jobs:
   deploy:
     # This is an example deploy job, not actually used by the workflow
-    filters:
-      branches:
-        ignore:
-          - master
-      files:
-        ignore:
-          - README.md
     docker:
       - image: cimg/base:stable
     steps:
