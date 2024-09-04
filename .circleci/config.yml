@@ -2,6 +2,14 @@
 # Stacks detected: deps:python:.
 version: 2.1
 jobs:
+  build:
+    filters:
+      branches:
+        ignore:
+          - master
+      files:
+        ignore:
+          - README.md
   deploy:
     # This is an example deploy job, not actually used by the workflow
     docker:

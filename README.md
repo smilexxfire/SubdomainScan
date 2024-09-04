@@ -1,7 +1,7 @@
 # SubdomainScan
 子域名扫描子系统
 ## 概述
-SubdomainScan是一款分布式子域名扫描系统，允许轻松集成多种子域名扫描工具，目前支持subfinder、amass
+SubdomainScan是一款分布式子域名扫描系统，允许轻松集成多种子域名扫描工具，目前支持subfinder、amass、oneforall
 
 ## 项目依赖
 - mongo（**必须**，数据库，存放扫描结果）
@@ -51,6 +51,8 @@ chmod +x thirdparty/*
 修改`config/default.ini`配置文件，填入对应配置值
 
 接着运行`python subdomain_worker.py`即可开启监听，等待任务发布
+#### oneforall
+oneforall扫描节点需单独部署：[文档](https://github.com/smilexxfire/OneForallForMe)
 
 ### 生产者(发布扫描任务)部署
 目前仅提供源代码的方式部署
