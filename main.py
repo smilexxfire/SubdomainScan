@@ -43,8 +43,4 @@ def create_index(collection, field_name):
 
 if __name__ == '__main__':
     check_dep()
-    create_index("asserts", "domain")
-    create_index("comments", "assert_name")
     create_index("subdomain", "subdomain")
-    create_index("dns_record", "host")
-    create_index("waf_detect", "ip")
