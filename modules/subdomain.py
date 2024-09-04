@@ -1,5 +1,5 @@
 from config.log import logger
-from modules.scan import subfinder, xray
+from modules.subdomainscan import subfinder, amass
 
 
 class Subdomain(object):
@@ -7,21 +7,19 @@ class Subdomain(object):
 
     def __init__(self, task: dict):
         self.task = task
-        self.modules = list()
-        self.collect_funcs = list()
-        pass
 
     def run(self):
-        """子域名扫描入口函数
+        """子域名扫描模块入口函数
 
         :param task: 待扫描任务字典，assert_name、domain、module_name
         :return:
         """
         logger.log('INFOR', f'Start collecting subdomains of {self.task["domain"]}')
         if self.task["module_name"] == "subfinder":
-            subfinder.run(self.task)
-        elif self.task["module_name"] == "xray":
-            xray.run(self.task)
+            subfinder.run(self.task["domain"])
+        elif self.task["module_name"] == "amass":
+            amass.run(self.task["domain"])
+        logger.log('INFOR', f'Finished collecting subdomains of {self.task["domain"]}')
 
 
 if __name__ == '__main__':

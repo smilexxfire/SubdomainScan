@@ -1,23 +1,63 @@
-# subdomainMonitor
-子域名监控子系统
+# SubdomainScan
+子域名扫描子系统
 ## 概述
-定时对指定域名进行子域名扫描，并将结果存入数据库，同时对变化内容进行消息推送，支持多种子域名扫描工具，支持分布式运行即多个consumer。
-
+SubdomainScan是一款分布式子域名扫描系统，允许轻松集成多种子域名扫描工具，目前支持subfinder、amass
 
 ## 项目依赖
-- mongo
-- rabbitmq
-- [资产管理子系统部署](https://github.com/smilexxfire/assertManager)
-- subdomain扫描工具
-  - subfinder：环境变量中配置好即可
-  - xray：需在modules/subdomain.py中修改xray_scan方法的bin_directory变量为xray所在目录（仅xray高级版支持子域名扫描
+- mongo（**必须**，数据库，存放扫描结果）
+- rabbitmq（**必须**，消息队列，用于存放、消费扫描任务）
+- [heartbeat](https://github.com/smilexxfire/FlaskHeartBeat)（可选，心跳监控，定时发送udp心跳，需部署安装服务端）
+- fluentd（可选，控制台日志同步给fluentd处理）
 
-平台支持
-- Linux
+## 支持平台/语言
+Windows/Linux
+
+建议使用python3.8及以上
 ## 使用
-1. `pip install -r requirements.txt`
-2. 修改配置文件default.ini.sample，并重命名为default.ini
-3. `python3 main.py` 检查环境，自动创建数据库索引
-4. 生产者：运行`python3 producer.py`会自动查询数据库获取主域名，接着将任务发布到rabbitmq
-5. 消费者：运行`python3 consumer.py`会自动在mq中取出消息并执行，支持多个consumer
+### 扫描节点(消费者)部署
+推荐使用docker部署运行
+```shell
+docker run -d \
+  --name subdomainscan \
+  --restart=always \
+  -e rabbitmq_host=xxx \
+  -e rabbitmq_port=5672 \
+  -e rabbitmq_username=xxx \
+  -e rabbitmq_password=xxx \
+  -e rabbitmq_queue_name=subdomain \
+  -e mongo_host=xxx \
+  -e mongo_port=27017 \
+  -e mongo_username=xxx \
+  -e mongo_password=xxx \
+  -e mongo_database=src \
+  smilexxfire/subdomainscan
+```
+若部署了可选配置，添加以下环境变量
+```shell
+  -e heartbeat_open=true \
+  -e heartbeat_host=xxx \
+  -e heartbeat_port=5006 \
+  -e fluentd_open=true \
+  -e fluentd_host=xxxx \
+  -e fluentd_port=24224 \
+```
+通过源代码
+```shell
+git clone https://github.com/smilexxfire/SubdomainScan.git
+pip install -r requirements.txt
+# linux需要添加可执行权限
+chmod +x thirdparty/*
+```
+修改`config/default.ini`配置文件，填入对应配置值
 
+接着运行`python subdomain_worker.py`即可开启监听，等待任务发布
+
+### 生产者(发布扫描任务)部署
+目前仅提供源代码的方式部署
+```shell
+git clone https://github.com/smilexxfire/SubdomainScan.git
+pip install -r requirements.txt
+```
+修改`producer.py`文件
+
+接着运行`python producer.py`即可发布扫描任务

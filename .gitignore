@@ -160,6 +160,6 @@ cython_debug/
 #.idea/
 **/__init__.py
 test.py
-result/subdomain/**
-result/app.log
-config/default.ini
+result/**
+docker-compose.yaml
+subdomainMonitor.zip

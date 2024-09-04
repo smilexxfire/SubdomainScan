@@ -2,41 +2,44 @@
 Module base class
 """
 
-import json
-import threading
 import time
+import pymongo
 
-import requests
-from config.log import logger
+from common.database.db import conn_db
+from common.utils import delete_file_if_exists
 from config import settings
-from common import utils
-
-lock = threading.Lock()
-
+from config.log import logger
 
 class Module(object):
-    def __init__(self):
-        self.module = 'Module'
-        self.source = 'BaseModule'
-        # self.cookie = None
-        # self.header = dict()
-        # self.proxy = None
-        # self.delay = 1  # 请求睡眠时延
-        # self.timeout = settings.request_timeout_second  # 请求超时时间
-        # self.verify = settings.request_ssl_verify  # 请求SSL验证
-        self.domain = str()  # 当前进行子域名收集的主域
-        self.subdomains = set()  # 存放发现的子域
+    def __init__(self, target:str=None, targets:list=None):
         self.results = list()  # 存放模块结果
+        self.targets = self.get_targets(target, targets)    # 存放所有模板
+        if self.targets is None:
+            raise ValueError("domains cannot be None. Initialization failed.")
+
         self.start = time.time()  # 模块开始执行时间
         self.end = None  # 模块结束执行时间
         self.elapse = None  # 模块执行耗时
+
+        self.targets_file = str(settings.result_save_dir.joinpath("targets.temp.txt"))
+        self.result_file = str(settings.result_save_dir.joinpath("result.temp.json"))
+        self.set_execute_path()
 
     def begin(self):
         """
         begin log
         """
-        logger.log('DEBUG', f'Start {self.source} module to '
-                            f'collect subdomains of {self.domain}')
+        logger.log('INFOR', f'Start {self.source} module')
+
+    def get_targets(self, target: str = None, targets: list = None):
+        if target is None and targets is None:
+            return None
+        result = []
+        if target is not None:
+            result.append(target)
+        if targets is not None:
+            result.extend(targets)
+        return result
 
     def finish(self):
         """
@@ -44,47 +47,45 @@ class Module(object):
         """
         self.end = time.time()
         self.elapse = round(self.end - self.start, 1)
-        logger.log('DEBUG', f'Finished {self.source} module to '
-                            f'collect {self.domain}\'s subdomains')
-        logger.log('INFOR', f'{self.source} module took {self.elapse} seconds '
-                            f'found {len(self.subdomains)} subdomains')
-        logger.log('DEBUG', f'{self.source} module found subdomains of {self.domain}\n'
-                            f'{self.subdomains}')
+        logger.log('INFOR', f'Finished {self.source} module took {self.elapse} seconds find {len(self.results)} subdomains'
+                            f' of {self.domain}')
 
-    def save_json(self):
-        """
-        Save the results of each module as a json file
+    def delete_temp(self):
+        delete_file_if_exists(self.result_file)
+        delete_file_if_exists(self.targets_file)
 
-        :return bool: whether saved successfully
-        """
-        if not settings.save_module_result:
-            return False
-        logger.log('TRACE', f'Save the subdomain results found by '
-                            f'{self.source} module as a json file')
-        path = settings.result_save_dir.joinpath(self.domain, self.module)
-        path.mkdir(parents=True, exist_ok=True)
-        name = self.source + '.json'
-        path = path.joinpath(name)
-        with open(path, mode='w', errors='ignore') as file:
-            result = {'domain': self.domain,
-                      'name': self.module,
-                      'source': self.source,
-                      'elapse': self.elapse,
-                      'find': len(self.subdomains),
-                      'subdomains': list(self.subdomains),
-                      'infos': self.infos}
-            json.dump(result, file, ensure_ascii=False, indent=4)
-        return True
+    def set_execute_path(self):
+        if settings.PLATFORM == "Linux":
+            self.execute_path = str(settings.third_party_dir.joinpath(self.source))
+        elif settings.PLATFORM == "Windows":
+            self.execute_path = str(settings.third_party_dir.joinpath(self.source + ".exe"))
+    def save_targets(self):
+        with open(self.targets_file, "w") as f:
+            for domain in self.targets:
+                f.write(domain.strip() + "\n")
 
-
-    def save_db(self):
+    def save_db(self, collection):
         """
         Save module results into the database
         """
-        logger.log('DEBUG', f'Saving results to database')
-        lock.acquire()
-        db = Database()
-        db.create_table(self.domain)
-        db.save_db(self.domain, self.results, self.source)
-        db.close()
-        lock.release()
+        logger.log('INFOR', f'Start save db results')
+        if len(self.results) == 0:
+            return
+
+        while True:
+            # 存入数据库
+            try:
+                db = conn_db(collection)
+                db.insert_many(self.results, ordered=False)
+                return
+            except pymongo.errors.BulkWriteError as e:
+                for error in e.details['writeErrors']:
+                    if error['code'] == 11000:  # E11000 duplicate key error collection，忽略重复主键错误
+                        return
+                        # print(f"Ignoring duplicate key error for document with _id {error['op']['_id']}")
+                    else:
+                        logger.log("ERROR",f"{error['code']}: {error['message']}")
+                        logger.log("INFOR", "尝试重新save_db....")
+            except Exception as e:
+                logger.log("ERROR", f"error：{e}")
+                logger.log("INFOR", "尝试重新save_db....")
