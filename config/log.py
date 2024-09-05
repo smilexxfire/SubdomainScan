@@ -6,6 +6,8 @@ from fluent import sender
 
 from config.settings import FLUENTD_HOST, FLUENTD_PORT, FLUENTD_OPEN
 from common.utils import get_external_ip,get_hostname
+from config import settings
+
 # 路径设置
 relative_directory = pathlib.Path(__file__).parent.parent  # 代码相对路径
 result_save_dir = relative_directory.joinpath('result')  # 结果保存目录
@@ -42,7 +44,7 @@ logger.add(log_path, level='DEBUG', format=logfile_fmt, enqueue=True, encoding='
 
 if FLUENTD_OPEN == "true":
     # 配置Fluentd
-    fluent_sender = sender.FluentSender('secret_fluentd', host=FLUENTD_HOST, port=int(FLUENTD_PORT))
+    fluent_sender = sender.FluentSender(settings.FLUENTD_MATCH, host=FLUENTD_HOST, port=int(FLUENTD_PORT))
     # 创建一个自定义的Loguru处理器
     class FluentdHandler:
         def __init__(self):

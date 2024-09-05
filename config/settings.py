@@ -11,7 +11,6 @@ import pathlib
 relative_directory = pathlib.Path(__file__).parent.parent  # 项目代码相对路径
 third_party_dir = relative_directory.joinpath('thirdparty')  # 三方工具目录
 result_save_dir = relative_directory.joinpath('result')  # 结果保存目录
-module_dir = relative_directory.joinpath('modules')
 
 # 读取配置文件 - rabbitmq
 RABBITMQ_HOST = read_ini_config("rabbitmq", "host")
@@ -36,3 +35,4 @@ HEARTBEAT_OPEN = read_ini_config("heartbeat", "open")
 FLUENTD_HOST = read_ini_config("fluentd", "host")
 FLUENTD_PORT = read_ini_config("fluentd", "port")
 FLUENTD_OPEN = read_ini_config("fluentd", "open")
+FLUENTD_MATCH = read_ini_config("fluentd", "match")

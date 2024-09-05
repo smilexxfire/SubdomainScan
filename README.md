@@ -40,6 +40,7 @@ docker run -d \
   -e fluentd_open=true \
   -e fluentd_host=xxxx \
   -e fluentd_port=24224 \
+  -e fluentd_match=secret_subdomainscan
 ```
 通过源代码
 ```shell
