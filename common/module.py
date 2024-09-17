@@ -11,11 +11,8 @@ from config import settings
 from config.log import logger
 
 class Module(object):
-    def __init__(self, target:str=None, targets:list=None):
+    def __init__(self):
         self.results = list()  # 存放模块结果
-        self.targets = self.get_targets(target, targets)    # 存放所有模板
-        if self.targets is None:
-            raise ValueError("domains cannot be None. Initialization failed.")
 
         self.start = time.time()  # 模块开始执行时间
         self.end = None  # 模块结束执行时间
@@ -30,16 +27,6 @@ class Module(object):
         begin log
         """
         logger.log('INFOR', f'Start {self.source} module')
-
-    def get_targets(self, target: str = None, targets: list = None):
-        if target is None and targets is None:
-            return None
-        result = []
-        if target is not None:
-            result.append(target)
-        if targets is not None:
-            result.extend(targets)
-        return result
 
     def finish(self):
         """
@@ -59,12 +46,8 @@ class Module(object):
             self.execute_path = str(settings.third_party_dir.joinpath(self.source))
         elif settings.PLATFORM == "Windows":
             self.execute_path = str(settings.third_party_dir.joinpath(self.source + ".exe"))
-    def save_targets(self):
-        with open(self.targets_file, "w") as f:
-            for domain in self.targets:
-                f.write(domain.strip() + "\n")
 
-    def save_db(self, collection):
+    def save_db(self):
         """
         Save module results into the database
         """
@@ -75,7 +58,7 @@ class Module(object):
         while True:
             # 存入数据库
             try:
-                db = conn_db(collection)
+                db = conn_db(self.collection)
                 db.insert_many(self.results, ordered=False)
                 return
             except pymongo.errors.BulkWriteError as e:

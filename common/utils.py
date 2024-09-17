@@ -1,4 +1,3 @@
-
 import configparser
 import os
 import requests
@@ -25,15 +24,16 @@ def read_ini_config(section_name, key_name, file_name=os.path.dirname(os.path.ab
         return value
     except:
         return None
+
 def get_external_ip():
-    try:
-        response = requests.get('https://httpbin.org/ip')
-        response.raise_for_status()  # 检查请求是否成功
-        ip = response.json()['origin']
-        return ip
-    except requests.RequestException as e:
-        print(f"An error occurred: {e}")
-        return None
+    while True:
+        try:
+            response = requests.get('https://httpbin.org/ip')
+            response.raise_for_status()  # 检查请求是否成功
+            ip = response.json()['origin']
+            return ip
+        except requests.RequestException as e:
+            print(f"An error occurred: {e}")
 
 
 def rename_dict_key(dict_obj, old_key, new_key):

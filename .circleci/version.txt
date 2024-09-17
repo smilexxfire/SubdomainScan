@@ -1,1 +1,1 @@
-smilexxfire/subdomainscan:2.1
+smilexxfire/subdomainscan:2.2

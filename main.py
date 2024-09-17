@@ -44,3 +44,4 @@ def create_index(collection, field_name):
 if __name__ == '__main__':
     check_dep()
     create_index("subdomain", "subdomain")
+    create_index("task", "subdomain")

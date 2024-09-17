@@ -1,10 +1,13 @@
 import json
+import os
 import subprocess
 from common.module import Module
+from common.task import Task
 from common.utils import rename_dict_key
 from config.log import logger
-class Subfinder(Module):
-    def __init__(self, domain:str):
+
+class Subfinder(Module, Task):
+    def __init__(self, domain: str, task_id):
         """
 
         :param domain: 需要扫描的域名
@@ -13,7 +16,8 @@ class Subfinder(Module):
         self.source = "subfinder"
         self.collection = "subdomain"
         self.domain = domain
-        Module.__init__(self, domain)
+        Module.__init__(self)
+        Task.__init__(self, task_id)
 
     def do_scan(self):
         """
@@ -32,6 +36,8 @@ class Subfinder(Module):
         """
         # 从文件中读取数据
         logger.log("INFOR", "Start deal data process")
+        if not os.path.exists(self.result_file):
+            return
         with open(self.result_file, "r") as f:
             datas = f.readlines()
             json_list = [json.loads(data) for data in datas]
@@ -44,7 +50,7 @@ class Subfinder(Module):
         self.results = json_list
 
     def save_db(self):
-        super().save_db("subdomain")
+        super().save_db()
 
 
     def run(self):
@@ -53,21 +59,23 @@ class Subfinder(Module):
 
         @return:
         """
+        self.receive_task()
         self.begin()
         self.do_scan()
         self.deal_data()
         self.save_db()
         self.finish()
         self.delete_temp()
+        self.finnish_task(self.elapse, len(self.results))
 
-def run(target:str):
+def run(target:str, task_id):
     """
     类调用统一入口
     
     @return: 
     """
-    subfinder = Subfinder(target)
+    subfinder = Subfinder(target, task_id)
     subfinder.run()
 
 if __name__ == '__main__':
-    run(target="xxf.world")
+    run(target="xxf.world", task_id="12312-231321")

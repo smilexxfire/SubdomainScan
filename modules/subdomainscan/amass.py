@@ -12,11 +12,11 @@ import json
 import os
 import subprocess
 from common.module import Module
-from common.utils import rename_dict_key
+from common.task import Task
 from config.log import logger
 
-class Amass(Module):
-    def __init__(self, domain: str):
+class Amass(Module, Task):
+    def __init__(self, domain: str, task_id):
         """
 
         @param task: dict,必须包含domain, assert_name字段
@@ -25,7 +25,8 @@ class Amass(Module):
         self.source = "amass"
         self.collection = "subdomain"
         self.domain = domain
-        Module.__init__(self, domain)
+        Module.__init__(self)
+        Task.__init__(self, task_id)
 
     def do_scan(self):
         """
@@ -57,7 +58,7 @@ class Amass(Module):
         self.results = res_list
 
     def save_db(self):
-        super().save_db("subdomain")
+        super().save_db()
 
     def run(self):
         """
@@ -65,24 +66,26 @@ class Amass(Module):
 
         @return:
         """
+        self.receive_task()
         self.begin()
         self.do_scan()
         self.deal_data()
         self.save_db()
         self.finish()
         self.delete_temp()
+        self.finnish_task(time_escape=self.elapse, lens=len(self.results))
 
 
-def run(target: str = None):
+def run(target: str, task_id: str):
     """
     类调用统一入口
 
     @return:
     """
-    amass = Amass(target)
+    amass = Amass(target, task_id)
     amass.run()
 
 
 if __name__ == '__main__':
-    run(target="xxf.world")
+    run(target="xxf.world", task_id="123213043-432432")
     # run(targets=["r3col.top", "boc-samsunglife.cn"])

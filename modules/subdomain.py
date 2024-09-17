@@ -16,12 +16,12 @@ class Subdomain(object):
         """
         logger.log('INFOR', f'Start collecting subdomains of {self.task["domain"]}')
         if self.task["module_name"] == "subfinder":
-            subfinder.run(self.task["domain"])
+            subfinder.run(self.task["domain"], self.task["task_id"])
         elif self.task["module_name"] == "amass":
-            amass.run(self.task["domain"])
+            amass.run(self.task["domain"], self.task["task_id"])
         logger.log('INFOR', f'Finished collecting subdomains of {self.task["domain"]}')
 
 
 if __name__ == '__main__':
-    subdomain = Subdomain({"domain": "xxf.world", "assert_name": "测试", "module_name": "subfinder"})
+    subdomain = Subdomain({"domain": "xxf.world", "module_name": "subfinder", "task_id": "123123"})
     subdomain.run()
